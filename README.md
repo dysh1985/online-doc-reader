@@ -29,6 +29,18 @@ npm run dev
    Start Command: `npm start`
 4. 在 Render 的环境变量里设置 `JWT_SECRET` 和 `ADMIN_CODE`，如果使用 Postgres，设置 `DATABASE_URL`。
 
+部署到腾讯云 CloudBase（静态托管）
+
+1. CloudBase 静态托管要求项目根目录包含 `npm run build`，并生成静态目录 `dist/`。
+2. 本项目已新增 `build.js`，运行 `npm run build` 会将 `public/` 中的静态页面复制到 `dist/`。
+3. 如果你希望使用 CloudBase 静态托管，请在 GitHub 仓库中配置以下 Secrets：
+   - `TCB_SECRET_ID`
+   - `TCB_SECRET_KEY`
+   - `TCB_ENV_ID`
+4. 已添加 GitHub Actions 工作流文件 `.github/workflows/deploy.yml`，当你 push 到 `main` 分支时，会自动构建并部署 `dist/`。
+
+> 注意：当前项目本地版本包含 Node.js 后端（Express、文件上传、登录逻辑），而 CloudBase 静态托管只能部署前端静态页面。如果你要部署完整的功能，需要额外将后端迁移到 CloudBase 云函数或使用腾讯云服务器/容器。
+
 推送到 GitHub（示例）
 
 ```bash
