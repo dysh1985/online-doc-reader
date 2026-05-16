@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>在线文档阅读</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="header"><h1>在线文档阅读</h1></header>
+
+    <section id="auth">
+      <div id="forms">
+        <div>
+          <h3>登录</h3>
+          <input id="login-user" placeholder="用户名" />
+          <input id="login-pass" placeholder="密码" type="password" />
+          <button id="btn-login">登录</button>
+        </div>
+        <div>
+          <h3>注册</h3>
+          <input id="reg-user" placeholder="用户名" />
+          <input id="reg-pass" placeholder="密码" type="password" />
+          <input id="reg-admin" placeholder="管理员代码（可选）" />
+          <button id="btn-reg">注册</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="app" class="hidden">
+      <div class="topbar">
+        <div class="status">当前：<strong id="current-user"></strong></div>
+        <div class="actions">
+          <button id="btn-fullscreen">全屏</button>
+          <button id="btn-logout">登出</button>
+        </div>
+      </div>
+
+      <div class="workbench">
+        <aside class="sidebar expanded" id="sidebar">
+          <div class="sidebar-title">
+            <h3>文档列表</h3>
+            <button id="toggle-sidebar" title="折叠/展开">←</button>
+          </div>
+          <div class="sidebar-body">
+            <div class="uploader">
+              <input type="file" id="file-input" />
+              <button id="btn-upload">上传</button>
+            </div>
+            <ul id="file-list"></ul>
+          </div>
+        </aside>
+
+        <section class="viewer">
+          <div class="viewer-header">
+            <h3>预览</h3>
+          </div>
+          <div id="viewer-area">选择一个文件以预览</div>
+        </section>
+      </div>
+    </section>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>
