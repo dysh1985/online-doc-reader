@@ -1,5 +1,4 @@
-const api = (path, opts={}) => fetch('/api' + path, opts).then(r => r.json().catch(() => {}));
-
+const API_BASE = window.API_BASE || '';
 let token = localStorage.getItem('token');
 const sidebar = document.getElementById('sidebar');
 const toggleSidebar = document.getElementById('toggle-sidebar');
@@ -17,7 +16,7 @@ function setAuth(t, username) {
 document.getElementById('btn-login').onclick = async () => {
   const username = document.getElementById('login-user').value.trim();
   const password = document.getElementById('login-pass').value;
-  const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+  const res = await fetch(`${API_BASE}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
   const j = await res.json();
   if (j.token) { setAuth(j.token, username); loadFiles(); } else alert('登录失败，请检查用户名或密码');
 };
@@ -26,7 +25,7 @@ document.getElementById('btn-reg').onclick = async () => {
   const username = document.getElementById('reg-user').value.trim();
   const password = document.getElementById('reg-pass').value;
   const adminCode = document.getElementById('reg-admin').value.trim();
-  const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password, adminCode }) });
+  const res = await fetch(`${API_BASE}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password, adminCode }) });
   const j = await res.json();
   if (j.token) { setAuth(j.token, username); loadFiles(); } else alert('注册失败，请检查输入');
 };
@@ -36,9 +35,9 @@ document.getElementById('btn-logout').onclick = () => setAuth(null);
 document.getElementById('btn-upload').onclick = async () => {
   const file = document.getElementById('file-input').files[0];
   if (!file) return alert('请选择文件');
-  const fd = new FormData();
-  fd.append('file', file);
-  const res = await fetch('/api/files/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd });
+  const data = await file.arrayBuffer();
+  const base64 = btoa(String.fromCharCode(...new Uint8Array(data)));
+  const res = await fetch(`${API_BASE}/files/upload`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ name: file.name, type: file.type, data: base64 }) });
   if (res.ok) { await loadFiles(); alert('上传成功'); } else alert('上传失败');
 };
 
@@ -59,7 +58,7 @@ fullscreenBtn.onclick = async () => {
 };
 
 async function loadFiles() {
-  const res = await fetch('/api/files/list', { headers: { 'Authorization': 'Bearer ' + token } });
+  const res = await fetch(`${API_BASE}/files/list`, { headers: { 'Authorization': 'Bearer ' + token } });
   const list = await res.json();
   const ul = document.getElementById('file-list');
   ul.innerHTML = '';
@@ -93,27 +92,32 @@ async function openFile(id, name) {
   const ext = name.split('.').pop().toLowerCase();
   const area = document.getElementById('viewer-area');
   area.innerHTML = '加载中...';
-  const res = await fetch('/api/files/view/' + id, { headers: { 'Authorization': 'Bearer ' + token } });
+  const res = await fetch(`${API_BASE}/files/view/${id}`, { headers: { 'Authorization': 'Bearer ' + token } });
   if (!res.ok) { area.textContent = '无法预览该文件'; return; }
-  if (ext === 'pdf') {
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    area.innerHTML = `<iframe src="${url}"></iframe>`;
+  const data = await res.json();
+  if (!res.ok) { area.textContent = data.error || '无法预览该文件'; return; }
+  if (data.type === 'url') {
+    if (['pdf'].includes(data.ext)) {
+      area.innerHTML = `<iframe src="${data.url}"></iframe>`;
+      return;
+    }
+    if (['png','jpg','jpeg','gif','webp','bmp'].includes(data.ext)) {
+      area.innerHTML = `<img src="${data.url}" alt="${name}" />`;
+      return;
+    }
+    if (data.ext === 'txt') {
+      const text = await fetch(data.url).then(r => r.text());
+      area.textContent = text;
+      return;
+    }
+    area.innerHTML = `<iframe src="${data.url}" style="width:100%;height:100%;border:0"></iframe>`;
     return;
   }
-  if (['png','jpg','jpeg','gif','webp','bmp'].includes(ext)) {
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    area.innerHTML = `<img src="${url}" alt="${name}" />`;
+  if (data.type === 'html') {
+    area.innerHTML = data.html;
     return;
   }
-  if (ext === 'txt') {
-    const txt = await res.text();
-    area.textContent = txt;
-    return;
-  }
-  const html = await res.text();
-  area.innerHTML = html;
+  area.textContent = '无法预览该文件';
 }
 
 if (token) {

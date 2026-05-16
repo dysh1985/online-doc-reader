@@ -1,0 +1,13 @@
+{
+  "name": "cloudbase-api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^1.1.0",
+    "bcrypt": "^5.1.0",
+    "jsonwebtoken": "^9.0.0",
+    "mammoth": "^1.4.18",
+    "xlsx": "^0.18.5"
+  }
+}

@@ -24,11 +24,19 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Install function dependencies
+        run: |
+          cd functions/api
+          npm ci
+
       - name: Install CloudBase CLI
         run: npm install -g @cloudbase/cli
 
       - name: Login CloudBase CLI
         run: tcb login --apiKeyId ${{ secrets.TCB_SECRET_ID }} --apiKey ${{ secrets.TCB_SECRET_KEY }}
+
+      - name: Deploy API function
+        run: tcb functions deploy api ./functions/api -e ${{ secrets.TCB_ENV_ID }}
 
       - name: Deploy to CloudBase Static Hosting
         run: tcb hosting deploy ./dist /home -e ${{ secrets.TCB_ENV_ID }}

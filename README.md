@@ -29,18 +29,28 @@ npm run dev
    Start Command: `npm start`
 4. 在 Render 的环境变量里设置 `JWT_SECRET` 和 `ADMIN_CODE`，如果使用 Postgres，设置 `DATABASE_URL`。
 
-部署到腾讯云 CloudBase（静态托管）
+部署到腾讯云 CloudBase（静态托管 + 云函数）
 
-1. CloudBase 静态托管要求项目根目录包含 `npm run build`，并生成静态目录 `dist/`。
-2. 本项目已新增 `build.js`，运行 `npm run build` 会将 `public/` 中的静态页面复制到 `dist/`。
-3. 如果你希望使用 CloudBase 静态托管，请在 GitHub 仓库中配置以下 Secrets：
+1. 这个项目已改造为“前端静态页面 + CloudBase 云函数后端”的方案：
+   - 前端静态资源位于 `public/`，会构建到 `dist/`。
+   - 后端云函数代码位于 `functions/api/`，实现注册、登录、文件上传、文件列表、预览和删除。
+2. 运行 `npm run build` 会将静态页面复制到 `dist/`，支持 CloudBase 静态托管的部署要求。
+3. GitHub Actions 工作流 `.github/workflows/deploy.yml` 已配置：
+   - 安装依赖
+   - 构建静态页面
+   - 安装云函数依赖
+   - 部署 `functions/api` 云函数
+   - 部署静态页面到 CloudBase Hosting
+4. 在 GitHub 仓库中配置以下 Secrets：
    - `TCB_SECRET_ID`
    - `TCB_SECRET_KEY`
    - `TCB_ENV_ID`
-4. 已添加 GitHub Actions 工作流文件 `.github/workflows/deploy.yml`，当你 push 到 `main` 分支时，会自动构建并部署 `dist/`。
+5. 本地运行方式：
+   - 如需继续测试本地后端，可使用本地 Express 服务：`npm run dev`
+   - 若要试用 CloudBase 后端，请将 `public/config.js` 中的 `window.API_BASE` 指向 CloudBase 云函数 URL，例如：
+     `window.API_BASE = 'https://<your-env>.service.tcloudbase.com/api';`
 
-> 注意：当前项目本地版本包含 Node.js 后端（Express、文件上传、登录逻辑），而 CloudBase 静态托管只能部署前端静态页面。如果你要部署完整的功能，需要额外将后端迁移到 CloudBase 云函数或使用腾讯云服务器/容器。
-
+> 说明：CloudBase 托管会部署前端静态页面，而完整的 API 后端由 `functions/api` 云函数提供。当前项目已支持完整 CloudBase 部署方案。
 推送到 GitHub（示例）
 
 ```bash
