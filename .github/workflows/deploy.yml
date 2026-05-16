@@ -33,7 +33,7 @@ jobs:
         run: npm install -g @cloudbase/cli
 
       - name: Login CloudBase CLI
-        run: tcb login --apiKeyId ${{ secrets.TCB_SECRET_ID }} --apiKey ${{ secrets.TCB_SECRET_KEY }}
+        run: tcb login --key --apiKeyId ${{ secrets.TCB_SECRET_ID }} --apiKey ${{ secrets.TCB_SECRET_KEY }}
 
       - name: Deploy API function
         run: tcb functions deploy api ./functions/api -e ${{ secrets.TCB_ENV_ID }}
